@@ -219,7 +219,7 @@ canvas.onmouseup = function(event){
 
 }
 var esp = 1
-var fps = 19
+var fps = 50
 var volEfect = 0.3
 var volSong  = 0.1
 
