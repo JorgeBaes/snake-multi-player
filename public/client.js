@@ -1,5 +1,5 @@
 var socket = io.connect('https://multiplayer-snake-io.herokuapp.com/');
-
+//https://multiplayer-snake-io.herokuapp.com/
 var corusuario = `rgb(${Math.random() * 255},${Math.random() * 255},${Math.random() * 255})`
 var localP = { name: undefined, id: undefined, confirm: undefined, ingame: false, body: null, color: corusuario }
 
@@ -220,6 +220,7 @@ canvas.onmouseup = function(event){
 }
 var esp = 1
 var fps = 50
+var macatime = 20
 var volEfect = 0.3
 var volSong  = 0.1
 
@@ -377,6 +378,15 @@ socket.on('definefps', (val) => {
         fps = val   
     } 
 })
+function macatimeSet(val) {
+    socket.emit('definemacatime', val);
+}
+
+socket.on('definemacatime', (val) => {
+    if (val >= 0 && val<200) {
+        macatime = val
+    }
+})
 function drawrect(obj){
     c.fillRect(grid.x1 + obj.ix * grid.unit, grid.y1 + obj.iy * grid.unit, obj.t, obj.t)
 }
@@ -467,12 +477,12 @@ function strokeHover(xM = posX, yM = posY, x1, y1, w, h, r, c1 = 'white', c2 = '
 }
 render = function(){   
     c.clearRect(0, 0, cW, cH)
-    c.fillStyle = standart
+    c.fillStyle = 'rgba'+corusuario.slice(3,corusuario.length-1) + ',0.1)'
     c.fillRect(0,0,cW,cH)
 
     var listaordem = []
     if(localP.ingame){
-        c.strokeStyle = 'purple'
+        c.strokeStyle = corusuario
         c.lineWidth = tl/7
         c.strokeRect(grid.x1, grid.y1, grid.t, grid.t)
         if (con < 105 && (cima || baix || dire || esqr)) {
@@ -499,7 +509,7 @@ render = function(){
         if (count > tempo) {
             socket.emit('requiremaca',grid.mg);
             count = 0
-            tempo = 100 + Math.random() * 400
+            tempo = macatime + Math.random() * (200-macatime)
         }
         fillHover(posX, posY, tl, cH - 3 * tl, 8 * tl, 3 * tl, tl, 'rgba(11,0,255,0.12)', 'rgba(11,100,255,0.1)')
         strokeHover(posX, posY, tl, cH - 3 * tl, 8 * tl, 3 * tl, tl, 'rgba(11,0,255,0.2)', 'rgba(11,100,255,0.3)')
@@ -539,14 +549,15 @@ render = function(){
         socket.emit('updatesnake', {body:snake.body, ind:ind});
     }else{
         var grd1 = c.createLinearGradient(0, grid.y1 , 0, grid.y1 + grid.t);
-        grd1.addColorStop(0, "rgb(0,230,255)");
-        grd1.addColorStop(0.5, "rgb(0,255,255)");
-        grd1.addColorStop(1, "rgb(0,230,255)");
+        grd1.addColorStop(0, "rgba(0,230,255,0.8)");
+        grd1.addColorStop(0.5, "rgba(0,255,255,0.5)");
+        grd1.addColorStop(1, "rgba(0,230,255,0.8)");
         var grd2 = c.createLinearGradient(0, grid.y1, 0, grid.y1 + grid.t);
-        grd2.addColorStop(0, "rgb(0,255,230)");
-        grd2.addColorStop(0.5, "rgb(0,255,255)");
-        grd2.addColorStop(1, "rgb(0,255,255)");
-        drawHover(posX,posY,grid.x1, grid.y1, grid.t, grid.t , grd1,grd2)
+        grd2.addColorStop(0, "rgba(0,255,230,0.8)");
+        grd2.addColorStop(0.5, "rgba(0,255,255,0.5)");
+        grd2.addColorStop(1, "rgba(0,255,255,0.8)");
+        fillHover(posX,posY,grid.x1, grid.y1, grid.t, grid.t ,grid.t/8, grd1,grd2)
+        strokeHover(posX, posY, grid.x1, grid.y1, grid.t, grid.t, grid.t / 8, 'rgb(0,0,150)', 'rgb(100,100,200)')
         c.fillStyle = 'black'
         c.textBaseline = 'middle'
         c.textAlign = 'center'
@@ -572,17 +583,20 @@ render = function(){
                     str = ' 🐍🏆'
                 }
             }
-            c.fillText(players[i].name + str, 2.6 * tl, 2.3 * tl + tl * i)
+            c.fillText(players[i].name + str, 2.6 * tl, 2.6 * tl + tl*1.08 * i)
 
         }else{
-            c.fillText(players[i].name + ' 🍄', 2.6 * tl, 2.3 * tl + tl * i)
+            c.fillText(players[i].name + ' 🍄', 2.6 * tl, 2.6 * tl + tl * 1.08 * i)
         }
         /*c.textBaseline = 'center'
         c.fillStyle = 'green'
         c.font = tl * 0.5 + 'px arial'
         c.fillText('🟢', 1.2 * tl, 2.5 * tl + tl * i)*/
         c.fillStyle = players[i].color
-        c.fillRect(tl * 1.5, 2.3 * tl + tl * i,tl*0.9,tl*0.9)
+        c.fillRect(tl * 1.5, 2.6 * tl + tl * 1.08 * i,tl*0.9,tl*0.9)
+        c.strokeStyle = 'rgba(0,0,0,1)'
+        c.lineWidth = 1
+        c.strokeRect(tl * 1.5, 2.6 * tl + tl * 1.08 * i, tl * 0.9, tl * 0.9)
         
     }
     

@@ -13,7 +13,7 @@ app.get('/', (req, res) => {
 })
 server.listen(process.env.PORT || 3000);
 console.log('ouvindo na porta 3000 malucoo')
-
+//process.env.PORT || 3000
 
 
 var players = []
@@ -142,7 +142,7 @@ checkmaca = function (obj) {
     return false
 }
 var mg = 30
-var fps = 19
+var fps = 50
 io.sockets.on('connection', function (socket) {
     console.log('Client connected... ' + socket.id);
     socket.on('playersupdate', function (data) {
@@ -221,6 +221,9 @@ io.sockets.on('connection', function (socket) {
     })
     socket.on('definefps', function (d) {        
         io.emit('definefps', d)
+    })
+    socket.on('definemacatime', function (d) {
+        io.emit('definemacatime', d)
     })
 });
 
