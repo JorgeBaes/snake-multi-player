@@ -142,7 +142,7 @@ checkmaca = function (obj) {
     return false
 }
 var mg = 30
-var fps = 50
+var fps = 90
 io.sockets.on('connection', function (socket) {
     console.log('Client connected... ' + socket.id);
     socket.on('playersupdate', function (data) {

@@ -219,9 +219,9 @@ canvas.onmouseup = function(event){
 
 }
 var esp = 1
-var fps = 50
+var fps = 90
 var macatime = 20
-var volEfect = 0.3
+var volEfect = 0.1
 var volSong  = 0.1
 
 var cima = true
@@ -284,7 +284,7 @@ var count = 0
 var tempo = 100+Math.random()*400
 var macas = []
 var musicON = 0
-var efectON = 0
+var efectON = 1
 var players = []
 var ind = 0
 socket.on('playersupdate',(data)=>{
