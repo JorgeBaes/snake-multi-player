@@ -1,7 +1,8 @@
-var socket = io.connect('https://multiplayer-snake-io.herokuapp.com/');
-//https://multiplayer-snake-io.herokuapp.com/
+var socket = io.connect('https://snakemult-io.herokuapp.com/');
+
+//https://snakemult-io.herokuapp.com/
 var corusuario = `rgb(${Math.random() * 255},${Math.random() * 255},${Math.random() * 255})`
-var localP = { name: undefined, id: undefined, confirm: undefined, ingame: false, body: null, color: corusuario }
+var localP = { name: undefined, id: undefined, ingame: false, color: corusuario }
 
 socket.on('connect', function () {
     var nick = ''
@@ -15,8 +16,8 @@ socket.on('connect', function () {
             window.alert('Seu nick deve ter menos de 12 caracteres')
         }
     }
-    localP = { name: nick, id: socket.io.engine.id, confirm: 0, ingame: false, body: null, color:corusuario }
-    socket.emit('playersupdate',localP);
+    localP = { name: nick, id: socket.io.engine.id, ingame: false, color:corusuario }
+    socket.emit('newjoiner',localP);
 });
 
 ///////CCCCCCC/////AAAAAAA////////NN/////NN/////VV/////////VVVV///////AAA////////SSSSSSSS////////
@@ -51,147 +52,21 @@ function onMouseUpdate(e){
     posY = e.pageY;
 }
 
-const quad = function (x, y, cor = 'black') {
-    this.ix = x
-    this.iy = y
-    this.t = grid.unit
-    this.cor = cor
-    this.px = this.x
-    this.py = this.y
 
-    this.draw = function (color = this.cor) {
-        c.fillStyle = color
-        c.fillRect(grid.x1 + this.ix * grid.unit, grid.y1 + this.iy * grid.unit, this.t, this.t)
-    }
-}
-const cobra = function () {
-    this.dead = false
-    this.contdead = 0
-    this.body = [new quad(~~(maxgrid / 2), ~~(maxgrid / 2)),
-    new quad(~~(maxgrid / 2) + 1, ~~(maxgrid / 2)),
-    new quad(~~(maxgrid / 2) + 2, ~~(maxgrid / 2)),
-    new quad(~~(maxgrid / 2) + 37, ~~(maxgrid / 2)),
-    new quad(~~(maxgrid / 2) + 38, ~~(maxgrid / 2))]
-
-    var co = 0
-    for (let j in this.body) {
-        this.body[j].cor = corusuario
-    }
-    this.draw = function () {
-        if (this.dead) {
-            this.contdead++
-        }
-        if (this.contdead > 50) {
-            this.dead = false
-        }
-
-        if (cima) {
-            this.body[0].iy -= esp
-        }
-        if (baix) {
-            this.body[0].iy += esp
-        }
-        if (dire) {
-            this.body[0].ix += esp
-        }
-        else if (esqr) {
-            this.body[0].ix -= esp
-        }
-        if (this.body[0].ix == grid.mg) {
-            this.body[0].ix = 0
-        }
-        else if (this.body[0].ix == -1) {
-            this.body[0].ix = grid.mg - 1
-        }
-        if (this.body[0].iy == grid.mg) {
-            this.body[0].iy = 0
-        }
-        else if (this.body[0].iy == -1) {
-            this.body[0].iy = grid.mg - 1
-        }
-        for (let i in this.body) {
-            if (i > 0) {
-                this.body[i].ix = this.body[i - 1].px
-                this.body[i].iy = this.body[i - 1].py
-            }
-            if (this.dead) {
-                this.body[i].draw('red')
-            } else {
-                this.body[i].draw()
-            }
-        }
-        for (let i in this.body) {
-            this.body[i].px = this.body[i].ix
-            this.body[i].py = this.body[i].iy
-        }
-
-    }
-    this.checkselfcol = function () {
-        if (!this.dead) {
-            for (let i in this.body) {
-                if (this.body.some((el, j) => { return j != i && el.ix == this.body[i].ix && el.iy == this.body[i].iy })) {
-                    var len = this.body.length
-                    this.body.pop()
-                    if (efectON % 2 == 1) {
-                        let rand = 1 + ~~(Math.random() * 5)
-                        var audi = new Audio('agressao' + rand + '.mp3')
-                        audi.volume = volEfect
-                        audi.play()
-                    }                    
-                    this.dead = true
-                    this.contdead = 0
-                    break;
-                }
-            }
-        }
-    }
-    this.checkmaca = function () {
-        for (let i in macas) {
-            if (macas[i].ix == this.body[0].ix && macas[i].iy == this.body[0].iy) {
-                macas.splice(i, 1)
-                this.body.push(new quad(0, 0))
-                var co = 0
-                for (let j in this.body) {/*
-                    if (this.body.length < 49) {
-                        this.body[j].cor = `rgb(${co},${co},${this.body.length / 50 * 255})`
-                    } else {
-                        this.body[j].cor = `rgb(${255},${co},${co})`
-                    }
-                    co += 120 / (this.body.length - 1)
-                    */
-                    this.body[j].cor = players[ind].color
-                }
-            }
-        }
-    }
-
-}
 var audio = new Audio()
 audio.pause()
-var snake = new cobra()
 canvas.onmousedown = function(event){ 
     if (onhover(posX, posY, tl, tl, tl * 10, 2 * tl + tl * players.length)){
         corusuario = `rgb(${Math.random() * 255},${Math.random() * 255},${Math.random() * 255})`
-        localP.color = corusuario
-        players[ind] = localP
-        socket.emit('playerjoin', { p: players[ind], ind: ind });
-        for(let i in snake.body){
-            snake.body[i].cor = corusuario
-        }
+        socket.emit('playersupdatecolor', {ind: ind,color:corusuario});
+        //TROCA COR      
+        
     }
-    if (onhover(posX, posY, grid.x1, grid.y1, grid.t, grid.t) && localP.ingame == false){
-        localP.ingame = true
-        localP.body = snake.body
-        players[ind] = localP
-        socket.emit('playerjoin', {p:players[ind],ind:ind});
+    if (onhover(posX, posY, grid.x1, grid.y1, grid.t, grid.t) && players[ind].ingame == false){
+        socket.emit('playerjogar',ind)
     }
-    if (onhover(posX, posY, tl, cH - 3 * tl, 8 * tl, 3 * tl) && localP.ingame == true ){
-        localP.ingame = false
-        snake = new cobra()
-        localP.body = snake.body
-        players[ind] = localP
-        con = 0
-        socket.emit('playerjoin', { p: players[ind], ind: ind });
+    if (onhover(posX, posY, tl, cH - 3 * tl, 8 * tl, 3 * tl) && players[ind].ingame == true ){
+        socket.emit('playersair', players[ind].id)
     }
     if (onhover(posX, posY, cW - 1.45 * tl, cH - 1.5 * tl, tl, tl)){
         efectON++
@@ -212,49 +87,37 @@ canvas.onmousedown = function(event){
 
 
 }
+
+/*
 canvas.onmousemove = function(event){
 
 }
 canvas.onmouseup = function(event){
 
 }
+*/
 var esp = 1
 var fps = 90
 var macatime = 20
-var volEfect = 0.1
+var volEfect = 0.2
 var volSong  = 0.1
 
-var cima = true
-var baix = false
-var dire = false
-var esqr = false
+
 const UP = 38, DOWN = 40, RIGHT = 39, LEFT = 37, P = 80, C = 67, A = 65, S = 83; 
 window.addEventListener('keydown', kd)                                         
 function kd(e) {
     var key = e.keyCode
     if(key === UP){
-        cima = true
-        baix = false  
-        dire = false
-        esqr = false       
+        socket.emit('stateUpdate', { indINPLAY: indINPLAY, ori: 'T' })   
     }
     else if (key === DOWN) {
-        cima = false
-        baix = true
-        dire = false
-        esqr = false   
+        socket.emit('stateUpdate', { indINPLAY: indINPLAY, ori: 'B' })     
     }
     if (key === RIGHT) {
-        dire = true
-        esqr = false 
-        cima = false
-        baix = false 
+        socket.emit('stateUpdate', { indINPLAY: indINPLAY, ori: 'R' })    
     }
     else if (key === LEFT) {
-        dire = false
-        esqr = true  
-        cima = false
-        baix = false       
+        socket.emit('stateUpdate', { indINPLAY: indINPLAY, ori: 'L' })         
     }
     if (key === 107) {
         if (volEfect + 0.05 < 1) {
@@ -279,72 +142,48 @@ function kd(e) {
         }
     }
 }
-var trophy = -1
-var count = 0
-var tempo = 100+Math.random()*400
 var macas = []
 var musicON = 0
 var efectON = 1
 var players = []
+var inplay = []
 var ind = 0
-socket.on('playersupdate',(data)=>{
-    players = data
+var indINPLAY = 0
+var audio = new Audio()
+audio.pause()
+
+socket.on('playersupdate',(d)=>{
+    players = d
     for (let i in players) {
         if (players[i].id == localP.id) {
             ind = i
         }
     }
 })
-socket.on('updatesnake', (data) => {
-    if (data.ind != ind) {
-        players[data.ind].body = data.body         
-    }
-    for (let i in players){
-        for(let j in players[i].body){
-            players[i].body[j].t = grid.unit
-        }
-    }    
-})
-socket.on('updatesnakeesp', (data) => {    
-    players[data.ind].body = data.body    
-    for (let i in players) {
-        for (let j in players[i].body) {
-            players[i].body[j].t = grid.unit
-            players[i].body[j].cor = corusuario
+socket.on('inplayupdate',(d)=>{
+    inplay = d
+    for (let i in inplay) {
+        if (inplay[i].id == localP.id) {
+            indINPLAY = i
         }
     }
-    if(data.ind == ind){
-        snake.body = players[data.ind].body
-        for (let i in snake.body) {
-            snake.body[i].draw = function (color = this.cor) {
-                c.fillStyle = color
-                c.fillRect(grid.x1 + this.ix * grid.unit, grid.y1 + this.iy * grid.unit, this.t, this.t)
-            }
-        }
-    }
-    
 })
-socket.on('updatemaca', (data) => {
-    macas = data
-    for(let i in macas){
-        macas[i].t = grid.unit
-    }
+socket.on('macasupdate', (d) => {
+    macas = d
 })
-
-socket.on('redcaptured', (data) => {
-    if(data == ind && efectON%2==1){
-        let rand = 2+~~(Math.random()*8)
-        var audi = new Audio('blop'+rand+'.mp3')
+socket.on('redcaptured', (id) => {
+    if (id == localP.id && efectON % 2 == 1) {
+        let rand = 2 + ~~(Math.random() * 8)
+        var audi = new Audio('blop' + rand + '.mp3')
         audi.volume = volEfect
         audi.play()
-
     }
 })
-socket.on('orangecaptured', (data) => {
-    if (data == ind && efectON % 2 == 1) {
+socket.on('orangecaptured', (id) => {
+    if (id == localP.id && efectON % 2 == 1) {
         let rand = Math.random()
         var stri = 'blop1.mp3'
-        if(rand<0.3){
+        if (rand < 0.3) {
             stri = 'orange.mp3'
         } else if (rand < 0.6) {
             stri = 'nunao.mp3'
@@ -355,42 +194,35 @@ socket.on('orangecaptured', (data) => {
 
     }
 })
-socket.on('purplecaptured', (data) => {
-    if (data == ind && efectON % 2 == 1) {
+socket.on('purplecaptured', (id) => {
+    if (id != localP.id && efectON % 2 == 1) {
         let rand = 1 + ~~(Math.random() * 5)
         var audi = new Audio('resmungo' + rand + '.mp3')
         audi.volume = volEfect
         audi.play()
-    } else if (data == -12 && efectON % 2 == 1){
+    } else if (efectON % 2 == 1) {
         let rand = 1 + ~~(Math.random() * 5)
         var audi = new Audio('come' + rand + '.mp3')
         audi.volume = volEfect
         audi.play()
     }
 })
-
-
-function fpsSet(val){
-    socket.emit('definefps',val);    
-}
-socket.on('definefps', (val) => {
-    if(fps>=0){
-        fps = val   
-    } 
-})
-function macatimeSet(val) {
-    socket.emit('definemacatime', val);
-}
-
-socket.on('definemacatime', (val) => {
-    if (val >= 0 && val<200) {
-        macatime = val
+socket.on('agressao', (id) => {
+    if (id == localP.id && efectON % 2 == 1) {
+        let rand = 1 + ~~(Math.random() * 5)
+        var audi = new Audio('agressao' + rand + '.mp3')
+        audi.volume = volEfect
+        audi.play()        
     }
 })
 function drawrect(obj){
     c.fillRect(grid.x1 + obj.ix * grid.unit, grid.y1 + obj.iy * grid.unit, obj.t, obj.t)
 }
 con = 0
+function fpsset(val = 50){
+    socket.emit('fpsset',val)    
+    return 'fps = '+ 1000/val + '  ('+val+')'
+}
 function drawHover(xM = posX, yM = posY, x1, y1, w, h, c1 = 'white',c2 = 'black') {
     if (x1 < xM && xM < x1 + w && y1 < yM && yM < y1 + h) {
         c.fillStyle = c1
@@ -477,40 +309,14 @@ function strokeHover(xM = posX, yM = posY, x1, y1, w, h, r, c1 = 'white', c2 = '
 }
 render = function(){   
     c.clearRect(0, 0, cW, cH)
-    c.fillStyle = 'rgba'+corusuario.slice(3,corusuario.length-1) + ',0.1)'
+    c.fillStyle = 'rgba' + players[ind].color.slice(3, players[ind].color.length-1) + ',0.1)'
     c.fillRect(0,0,cW,cH)
 
     var listaordem = []
-    if(localP.ingame){
-        c.strokeStyle = corusuario
+    if(players[ind].ingame){
+        c.strokeStyle = players[ind].color
         c.lineWidth = tl/7
-        c.strokeRect(grid.x1, grid.y1, grid.t, grid.t)
-        if (con < 105 && (cima || baix || dire || esqr)) {
-            con++
-        }
-        snake.draw()
-        if (con > 100) {
-            snake.checkselfcol()
-        }
-        for(let i in players){
-            if(players[i].ingame && i != ind){
-                for(let j in players[i].body){
-                    c.fillStyle = players[i].color
-                    drawrect(players[i].body[j])
-                }                  
-            }
-        }
-        for (let i in macas) {
-            c.fillStyle = macas[i].cor
-            drawrect(macas[i])
-        }
-        
-        count++
-        if (count > tempo) {
-            socket.emit('requiremaca',grid.mg);
-            count = 0
-            tempo = macatime + Math.random() * (200-macatime)
-        }
+        c.strokeRect(grid.x1, grid.y1, grid.t, grid.t)        
         fillHover(posX, posY, tl, cH - 3 * tl, 8 * tl, 3 * tl, tl, 'rgba(11,0,255,0.12)', 'rgba(11,100,255,0.1)')
         strokeHover(posX, posY, tl, cH - 3 * tl, 8 * tl, 3 * tl, tl, 'rgba(11,0,255,0.2)', 'rgba(11,100,255,0.3)')
 
@@ -520,10 +326,8 @@ render = function(){
         c.font = 1.5 * grid.unit + 'px arial'
         c.fillText('Sair', tl*5, cH - 1.5 * tl)
         
-        for (let i in players) {
-            if (players[i].ingame) {
-                listaordem.push({ n: players[i].body.length, color: players[i].color, name: players[i].name, id: players[i].id})
-            }
+        for (let i in inplay) {
+            listaordem.push({ n: inplay[i].body.length, color: inplay[i].color, name: inplay[i].name, id: inplay[i].id })
         }
         listaordem.sort(function (b, a) {
             return a.n - b.n;
@@ -543,10 +347,18 @@ render = function(){
                 c.fillText(parseInt(parseInt(i)+1) + '°',cW/2, 10)
             }
         }
-
-
-
-        socket.emit('updatesnake', {body:snake.body, ind:ind});
+        for(let m in macas){
+            c.fillStyle = macas[m].color
+            c.fillRect(grid.x1 + macas[m].ix * grid.unit, grid.y1 + macas[m].iy * grid.unit, grid.unit, grid.unit)
+        }
+        for(let i in inplay){
+            for(let j in inplay[i].body){
+                c.fillStyle = inplay[i].dead?'red':inplay[i].color
+                c.fillRect(grid.x1 + inplay[i].body[j].ix * grid.unit, grid.y1 + inplay[i].body[j].iy * grid.unit, grid.unit, grid.unit)
+            }
+        }
+        
+        //socket.emit('updatesnake', {body:snake.body, ind:ind});
     }else{
         var grd1 = c.createLinearGradient(0, grid.y1 , 0, grid.y1 + grid.t);
         grd1.addColorStop(0, "rgba(0,230,255,0.8)");
@@ -563,6 +375,16 @@ render = function(){
         c.textAlign = 'center'
         c.font = 3*grid.unit+'px arial'
         c.fillText('Jogar',cW/2,cH/2)
+        var grd3 = c.createLinearGradient(cW * 0.4, 0, cW * 0.6, 0);
+        grd3.addColorStop(0, 'rgba' + players[ind].color.slice(3, players[ind].color.length - 1) + ',1)');
+        grd3.addColorStop(0.5, 'rgba' + players[ind].color.slice(3, players[ind].color.length - 1) + ',0.8)');
+        grd3.addColorStop(1, 'rgba' + players[ind].color.slice(3, players[ind].color.length - 1) + ',1)');
+        c.fillStyle = grd3
+        c.textBaseline = 'bottom'
+        c.textAlign = 'center'
+        c.font = 0.9 * grid.unit + 'px arial'
+        c.fillText('Um oferecimento de Jorge BC, socket.io e express', cW / 2, cH)
+
     }
     fillHover(posX, posY, tl, tl, tl * 11, 2 * tl + tl * players.length, tl, 'rgba(11,100,255,0.2)', 'rgba(11,100,255,0.12)')
     strokeHover(posX, posY, tl, tl, tl * 11, 2 * tl + tl * players.length, tl, 'rgba(11,100,255,0.5)', 'rgba(11,0,255,0.12)')
@@ -615,19 +437,11 @@ render = function(){
         c.fillText('🔊', cW - 1.5 * tl, cH - 0.5 * tl)
     } else {
         c.fillText('🔇', cW - 1.5 * tl, cH - 0.5 * tl)
-    }
-    
-
-
-
-
-    
+    }    
 }
 update = function(){
-    setTimeout(function(){
-        requestAnimationFrame(update, c)
-        render()
-    },fps)
+    requestAnimationFrame(update, c)
+    render()
 }
 // LOOP QUE MOVE E RENDERIZA
 update();
