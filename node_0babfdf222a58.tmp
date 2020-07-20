@@ -11,7 +11,7 @@ app.use(express.static('public'))
 app.get('/', (req, res) => {
     res.sendFile(__dirname + '/public/index.html')
 })
-server.listen(process.env.PORT || 3000);
+server.listen(3000);
 console.log('ouvindo na porta 3000 malucoo')
 //process.env.PORT || 3000
 
@@ -22,7 +22,7 @@ var macas = []
 var timeRando = 100+Math.random()*100
 var contTime  = 0
 var mg = 30
-var fps = 55
+var fps = 60
 
 var RED = 'red'
 var PURPLE = 'purple'
@@ -261,7 +261,7 @@ var myfunc = () => {
                 macas.push({ ix: x3rand, iy: y3rand, color: ORANGE })
             }
             macas.push({ ix: xrand, iy: yrand, color: RED })
-            timeRando = 60 + Math.random() * 100
+            timeRando = 100 + Math.random() * 100
             contTime = 0
             io.emit('macasupdate', macas)
         }
