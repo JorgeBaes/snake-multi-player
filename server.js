@@ -1,6 +1,3 @@
-//cd C:\Users\User\Desktop\Programações em JS\jogocomsocketApri
-
-
 
 var express = require('express');
 var app = express();
@@ -11,7 +8,7 @@ app.use(express.static('public'))
 app.get('/', (req, res) => {
     res.sendFile(__dirname + '/public/index.html')
 })
-server.listen(process.env.PORT || 3000);
+server.listen(3000);
 console.log('ouvindo na porta 3000 malucoo')
 //process.env.PORT || 3000
 

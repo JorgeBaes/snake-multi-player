@@ -1,6 +1,6 @@
-var socket = io.connect('https://snakemult-io.herokuapp.com/');
+var socket = io.connect('http://localhost:3000/');
 
-//https://snakemult-io.herokuapp.com/
+
 var corusuario = `rgb(${Math.random() * 255},${Math.random() * 255},${Math.random() * 255})`
 var localP = { name: undefined, id: undefined, ingame: false, color: corusuario }
 
